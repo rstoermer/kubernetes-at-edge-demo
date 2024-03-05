@@ -1,0 +1,7 @@
+---
+- name: Cluster prep
+  hosts: k8s_cluster
+  gather_facts: true
+  become: true
+  roles:
+    - role: prepare_rpi_ubuntu

@@ -1,0 +1,25 @@
+all:
+  vars:
+    secrets: "{{ lookup('community.sops.sops', '{{playbook_dir}}/../secrets.sops.yml') | ansible.builtin.from_yaml }}"
+    ansible_ssh_host_public_key: "{{ secrets.ssh_host_public_key }}"
+
+k8s_cluster:
+  children:
+    server:
+      hosts:
+        192.168.0.7:
+  vars:
+    k3s_version: v1.29.1+k3s2
+    ansible_user: "{{ secrets.ssh_user }}"
+    ansible_become_pass: "{{ secrets.become_pass }}"
+    cluster_cidr: 10.42.0.0/16
+    service_cidr: 10.43.0.0/16
+    api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
+    api_port: 6443
+    token: "{{ secrets.token }}"
+    k3s_server_location: "/var/lib/rancher/k3s"
+    systemd_dir: "/etc/systemd/system"
+    kubeconfig: "{{playbook_dir}}/../../artifacts/kubeconfig"
+    user_kubectl: true
+    extra_server_args: ""
+    extra_agent_args: ""

@@ -1,0 +1,35 @@
+---
+- name: Create the namespace for Crossplane
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    kind: Namespace
+    name: "{{ crossplane_namespace }}"
+    state: present
+
+- name: Add the Crossplane Helm repository
+  community.kubernetes.helm_repository:
+    name: crossplane-stable
+    repo_url: "https://charts.crossplane.io/stable"
+    state: present
+
+- name: Update Helm repository to ensure we get the latest list of charts
+  ansible.builtin.command: helm repo update
+
+- name: Install Crossplane using Helm
+  community.kubernetes.helm:
+    kubeconfig_path: "{{ kubeconfig }}"
+    name: crossplane
+    chart_ref: "{{ crossplane_chart }}"
+    release_namespace: "{{ crossplane_namespace }}"
+    chart_version: "{{ crossplane_version }}"
+    state: present
+    values:
+      replicas: 1
+
+- name: Apply Crossplane Providers
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    context: "default"
+    state: present
+    definition: "{{ lookup('template', item) }}"
+  loop: "{{ query('fileglob', '../templates/providers/*.yml.j2') }}"

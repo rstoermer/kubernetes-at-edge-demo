@@ -1,0 +1,52 @@
+- name: Download K3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Download K3s binary
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: "true"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+  changed_when: true
+
+- name: Copy K3s service file 
+  ansible.builtin.template:
+    src: "k3s.service.j2"
+    dest: "{{ systemd_dir }}/k3s.service"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable and check K3s service
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: true
+    state: started
+    enabled: true
+
+- name: Copy kubeconfig to control node
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ kubeconfig }}"
+    flat: true
+
+- name: Update the server IP in kubeconfig to point to the controlplane
+  delegate_to: 127.0.0.1
+  become: false
+  ansible.builtin.replace:
+    path: "{{ kubeconfig }}"
+    regexp: 'server: https:\/\/([0-9]{1,3}\.){3}[0-9]{1,3}:{{ api_port }}'
+    replace: 'server: https://{{ api_endpoint }}:{{ api_port }}'
+
+- name: Change file permission to be readable only by the user
+  delegate_to: 127.0.0.1
+  become: false
+  ansible.builtin.file:
+    path: "{{ kubeconfig }}"
+    mode: '600'

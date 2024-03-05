@@ -1,0 +1,30 @@
+apiVersion: helm.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: akri
+spec:
+  forProvider:
+    chart:
+      name: akri
+      repository: https://project-akri.github.io/akri/
+      version: 0.12.9
+    namespace: akri
+    skipCreateNamespace: false
+    values:
+      # Values see here: https://github.com/project-akri/akri/blob/main/deployment/helm/values.yaml
+      kubernetesDistro: k3s
+      udev:
+        discovery:
+          enabled: true
+        configuration:
+          enabled: true
+          name: akri-udev-video
+          discoveryDetails:
+            udevRules:
+            - 'KERNEL=="video0"'
+          brokerPod:
+            image:
+              repository: "ghcr.io/project-akri/akri/udev-video-broker"
+              tag: latest
+  providerConfigRef:
+    name: provider-helm

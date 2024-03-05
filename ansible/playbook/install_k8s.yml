@@ -1,0 +1,12 @@
+---
+- name: Cluster prep
+  hosts: k8s_cluster
+  gather_facts: true
+  become: true
+  roles:
+    - role: k8s_controlplane
+    - role: install_crossplane
+      become: false
+      delegate_to: 127.0.0.1
+      tags: 
+      - crossplane

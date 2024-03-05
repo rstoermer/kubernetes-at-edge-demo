@@ -1,0 +1,5 @@
+crossplane_version: "1.15.0"
+crossplane_namespace: "crossplane-system"
+crossplane_chart: "crossplane-stable/crossplane"
+crossplane_providers_version:
+  helm: "v0.17.0"

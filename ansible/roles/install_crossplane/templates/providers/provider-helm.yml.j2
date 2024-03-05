@@ -1,0 +1,58 @@
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-helm
+  namespace: crossplane-system
+spec:
+  package: "xpkg.upbound.io/crossplane-contrib/provider-helm:{{ crossplane_providers_version.helm }}"
+  runtimeConfigRef:
+    name: provider-helm
+
+---
+apiVersion: helm.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: provider-helm
+  namespace: crossplane-system
+spec:
+  credentials:
+    source: InjectedIdentity
+
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: DeploymentRuntimeConfig
+metadata:
+  name: provider-helm
+  namespace: crossplane-system
+spec:
+  deploymentTemplate:
+    metadata:
+      labels:
+        part-of: crossplane
+        crossplane: provider-helm
+  serviceAccountTemplate:
+    metadata:
+      name: provider-helm
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: provider-helm
+  namespace: crossplane-system
+
+---
+# TODO: Create a ClusterRole with the minimum permissions required for the provider
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: provider-helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: provider-helm
+  namespace: crossplane-system
