@@ -28,3 +28,6 @@ spec:
               tag: latest
   providerConfigRef:
     name: provider-helm
+
+# Test deployment via
+# k apply -n default -f https://raw.githubusercontent.com/project-akri/akri/main/deployment/samples/akri-video-streaming-app.yaml

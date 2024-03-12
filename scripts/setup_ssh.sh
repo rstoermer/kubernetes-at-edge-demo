@@ -1,9 +1,7 @@
-# Define an array of remote hosts
-REMOTE_HOSTS=("192.168.0.7")
-USER="rene"
+#!/bin/bash
 
-# Local SSH public key file
-SSH_KEY="$HOME/.ssh/ssh_pi.pub"
+# Include the hosts configuration
+source ./common.sh
 
 # Check if the SSH public key exists
 if [ ! -f "$SSH_KEY" ]; then
@@ -12,11 +10,11 @@ if [ ! -f "$SSH_KEY" ]; then
 fi
 
 # Iterate over the array of hosts
-for HOST in "${REMOTE_HOSTS[@]}"; do
+for HOST in "${ETH0_IPS[@]}"; do
     echo "Adding SSH key to $HOST..."
     
     # Use SSH and 'cat' to append the local public key to the remote authorized_keys
-    cat "$SSH_KEY" | ssh "$USER@$HOST" 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys'
+    cat "$SSH_KEY" | ssh "$USER@$HOST" 'mkdir -p ~/.ssh && cat > ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys'
     
     # Check if the SSH key was added successfully
     if [ $? -eq 0 ]; then

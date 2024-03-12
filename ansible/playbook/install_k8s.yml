@@ -1,12 +1,27 @@
 ---
-- name: Cluster prep
-  hosts: k8s_cluster
-  gather_facts: true
+- name: Create Controlplane Node
+  gather_facts: false
   become: true
+  hosts: controlplane
+  tags:
+  - controlplane
   roles:
     - role: k8s_controlplane
+
+- name: Create Worker Nodes
+  gather_facts: false
+  become: true
+  hosts: worker
+  tags:
+  - worker
+  roles:
+    - role: k8s_worker
+
+- name: Install Crossplane
+  gather_facts: false
+  become: false
+  hosts: 127.0.0.1
+  tags:
+  - crossplane
+  roles:
     - role: install_crossplane
-      become: false
-      delegate_to: 127.0.0.1
-      tags: 
-      - crossplane

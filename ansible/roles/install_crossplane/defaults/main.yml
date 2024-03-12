@@ -3,3 +3,4 @@ crossplane_namespace: "crossplane-system"
 crossplane_chart: "crossplane-stable/crossplane"
 crossplane_providers_version:
   helm: "v0.17.0"
+  azure: "v0.34.0"

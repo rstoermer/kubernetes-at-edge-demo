@@ -1,0 +1,39 @@
+---
+- name: Undo cluster setup
+  hosts: k8s_cluster
+  become: true
+  tasks:
+    # Kubernetes
+    - name: Run K3s Uninstall script [server]
+      when: "'controlplane' in group_names"
+      ansible.builtin.command:
+        cmd: k3s-uninstall.sh
+        removes: /var/lib/rancher/k3s/*
+    - name: Run K3s Uninstall script [worker]
+      when: "'worker' in group_names"
+      ansible.builtin.command:
+        cmd: k3s-agent-uninstall.sh
+        removes: /var/lib/rancher/k3s/*
+    - name: Remove k3s install script
+      ansible.builtin.file:
+        path: /usr/local/bin/k3s-install.sh
+        state: absent
+    - name: Remove contents of K3s server location
+      when: k3s_server_location is defined
+      ansible.builtin.shell:
+        cmd: "rm -rf {{ k3s_server_location }}/*"
+        removes: "{{ k3s_server_location }}/*"
+    # Setup
+    - name: Disable IPv4 forwarding
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "0"
+        state: present
+        reload: true
+    - name: Disable IPv6 forwarding
+      ansible.posix.sysctl:
+        name: net.ipv6.conf.all.forwarding
+        value: "0"
+        state: present
+        reload: true
+      when: ansible_all_ipv6_addresses

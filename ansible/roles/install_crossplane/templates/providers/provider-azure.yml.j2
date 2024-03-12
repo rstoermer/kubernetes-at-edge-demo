@@ -1,0 +1,18 @@
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-azure-network
+spec:
+  package: xpkg.upbound.io/upbound/provider-azure-network:{{ crossplane_providers_version.azure }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-secret
+  namespace: crossplane-system
+type: Opaque
+data:
+  creds: {{ secrets.azure_sp_json }}
+

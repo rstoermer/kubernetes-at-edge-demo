@@ -1,0 +1,12 @@
+apiVersion: network.azure.upbound.io/v1beta1
+kind: VirtualNetwork
+metadata:
+  name: crossplane-test-virtual-network
+spec:
+  forProvider:
+    addressSpace:
+      - 10.0.0.0/24
+    location: "germanywestcentral"
+    resourceGroupName: test
+  providerConfigRef:
+    name: provider-azure
