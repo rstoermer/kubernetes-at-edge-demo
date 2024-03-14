@@ -48,41 +48,33 @@
     reload: true
   when: ansible_all_ipv6_addresses
 
-# Enable UFW
-- name: Get ufw status
-  ansible.builtin.command:
-    cmd: ufw status
-  changed_when: false
-  register: ufw_status
+# Enable UFW and set ports
+- name: Open K8s API Port
+  community.general.ufw:
+    rule: allow
+    port: "{{ api_port }}"
+    proto: tcp
 
-- name: Allow UFW Exceptions
-  when: '"inactive" in ufw_status.stdout'
-  block:
-    - name: Open K8s API Port
-      community.general.ufw:
-        rule: allow
-        port: "{{ api_port }}"
-        proto: tcp
+- name: Allow all connections from other hosts in the inventory
+  community.general.ufw:
+    rule: allow
+    src: '{{ hostvars[item].ansible_host | default(item) }}'
+  loop: "{{ groups['all'] }}"
+  when: "inventory_hostname != item"
 
-    - name: Open K8s Metric Server Port
-      community.general.ufw:
-        rule: allow
-        port: 10250
-        proto: tcp
+- name: Open ports for default CIDRs used
+  community.general.ufw:
+    rule: allow
+    src: '{{ item }}'
+  loop: "{{ (cluster_cidr + ',' + service_cidr) | split(',') }}"
 
-    - name: Open ports for default CIDRs used
-      community.general.ufw:
-        rule: allow
-        src: '{{ item }}'
-      loop: "{{ (cluster_cidr + ',' + service_cidr) | split(',') }}"
+- name: Allow SSH connections through firewall
+  ansible.builtin.ufw:
+    rule: allow
+    name: OpenSSH
 
-    - name: Allow SSH connections through firewall
-      ansible.builtin.ufw:
-        rule: allow
-        name: OpenSSH
-
-    - name: Enable UFW
-      ansible.builtin.ufw:
-        state: enabled
-        policy: deny
-        logging: on
+- name: Enable UFW
+  ansible.builtin.ufw:
+    state: enabled
+    policy: deny
+    logging: on

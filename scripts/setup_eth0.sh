@@ -1,7 +1,7 @@
 # Paste this on the machine
 
 # Define the IP addresses for eth0 on each host
-IP="192.168.2.3"
+IP="192.168.2.X"
 IGW="192.168.2.1"
 FILE="99-custom-eth0.yaml"
 

@@ -11,8 +11,8 @@ k8s_cluster:
         192.168.2.3:
     worker:
       hosts:
-        # 192.168.2.4:
-        # 192.168.2.5:
+        192.168.2.4:
+        192.168.2.5:
   vars:
     k3s_version: v1.29.2+k3s1
     ansible_user: "{{ secrets.ssh_user }}"
